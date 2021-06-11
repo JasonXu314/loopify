@@ -1,10 +1,12 @@
 import axios from 'axios';
 
 export function getId(linkOrId: string): string {
-	if (/^https?:\/\/(www\.|m\.)?youtube.com\/watch\?v=.*/.test(linkOrId)) {
+	if (/^https?:\/\/(www\.|m\.)?youtube.com\/watch\?v=[a-zA-Z0-9\-_]{11}$/.test(linkOrId)) {
 		return linkOrId.split('?v=')[1];
-	} else {
+	} else if (/^[a-zA-Z0-9\-_]{11}$/.test(linkOrId)) {
 		return linkOrId;
+	} else {
+		throw new Error('Not a YouTube link or video ID');
 	}
 }
 

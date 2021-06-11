@@ -38,12 +38,16 @@ const Index: NextPage = () => {
 	const addLink = useCallback(
 		(newLink) => {
 			if (newLink !== '') {
-				const id = getId(newLink);
+				try {
+					const id = getId(newLink);
 
-				const cancel = fetchVideo(id);
+					const cancel = fetchVideo(id);
 
-				setTracks((tracks) => [...tracks, { placeholder: true, id, cancel }]);
-				setNewId('');
+					setTracks((tracks) => [...tracks, { placeholder: true, id, cancel }]);
+					setNewId('');
+				} catch (err) {
+					console.log(err.message);
+				}
 			}
 		},
 		[fetchVideo]
