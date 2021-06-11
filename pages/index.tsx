@@ -196,7 +196,7 @@ const Index: NextPage = () => {
 };
 
 export const getServerSideProps: GetServerSideProps = async () => {
-	axios.post(`${process.env.NEXT_PUBLIC_BACKEND_API!}/wakeup`).then().catch();
+	axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL!}/wakeup`).then().catch();
 
 	return { props: {} };
 };
