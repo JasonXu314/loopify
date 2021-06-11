@@ -1,0 +1,12 @@
+.main {
+	display: grid;
+	grid-template-columns: 3fr 1fr;
+
+	h4 {
+		margin: calc((139.375px - 1em) / 2) 0;
+	}
+
+	.loading {
+		height: 139.375px;
+	}
+}

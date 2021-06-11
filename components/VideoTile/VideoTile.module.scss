@@ -1,0 +1,13 @@
+.main {
+	display: grid;
+	grid-template-columns: 3fr 2fr;
+
+	h4 {
+		margin: 0.2em;
+	}
+
+	.right {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+	}
+}
