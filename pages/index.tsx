@@ -1,6 +1,6 @@
 import axios from 'axios';
 import Head from 'next/head';
-import { NextPage } from 'next/types';
+import { GetServerSideProps, NextPage } from 'next/types';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PlaceholderTile from '../components/PlaceholderTile/PlaceholderTile';
 import VideoTile from '../components/VideoTile/VideoTile';
@@ -18,7 +18,7 @@ const Index: NextPage = () => {
 
 	const fetchVideo = useCallback((id: string) => {
 		const { token, cancel } = axios.CancelToken.source();
-		axios.post<Video>(process.env.NEXT_PUBLIC_BACKEND_URL!, { id }, { cancelToken: token }).then((res) => {
+		axios.post<Video>(`${process.env.NEXT_PUBLIC_BACKEND_URL!}/load`, { id }, { cancelToken: token }).then((res) => {
 			const video = res.data;
 			const track = new Track(video);
 			setTracks((tracks) =>
@@ -54,8 +54,7 @@ const Index: NextPage = () => {
 
 	const onResume = useCallback(() => {
 		setPaused(false);
-	}, [])
-
+	}, []);
 
 	useEffect(() => {
 		audio.current = tracks[playIdx] as Track;
@@ -193,6 +192,12 @@ const Index: NextPage = () => {
 			</div>
 		</div>
 	);
+};
+
+export const getServerSideProps: GetServerSideProps = async () => {
+	axios.post(`${process.env.NEXT_PUBLIC_BACKEND_API!}/wakeup`);
+
+	return { props: {} };
 };
 
 export default Index;
