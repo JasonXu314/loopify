@@ -8,6 +8,7 @@ import styles from '../sass/Index.module.scss';
 import { getId, isPlaceholder, isTrack, Track, updateLocalStorage } from '../util/utils';
 
 const Index: NextPage = () => {
+	// TODO: Implement either batching of audio requests, or delayed loading
 	const [newId, setNewId] = useState<string>('');
 	const [tracks, setTracks] = useState<(Track | PlaceholderTrack)[]>([]);
 	const [playIdx, setPlayIdx] = useState<number>(0);
@@ -195,7 +196,7 @@ const Index: NextPage = () => {
 };
 
 export const getServerSideProps: GetServerSideProps = async () => {
-	axios.post(`${process.env.NEXT_PUBLIC_BACKEND_API!}/wakeup`);
+	axios.post(`${process.env.NEXT_PUBLIC_BACKEND_API!}/wakeup`).then().catch();
 
 	return { props: {} };
 };
