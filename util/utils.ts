@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export function getId(linkOrId: string): string {
-	if (/^https?:\/\/(www.)?youtube.com\/watch\?v=.*/.test(linkOrId)) {
+	if (/^https?:\/\/(www\.|m\.)?youtube.com\/watch\?v=.*/.test(linkOrId)) {
 		return linkOrId.split('?v=')[1];
 	} else {
 		return linkOrId;
