@@ -1,13 +1,62 @@
 .main {
+	position: relative;
 	display: grid;
 	grid-template-columns: 3fr 2fr;
+	border: 1px solid black;
+	background: white;
+	padding: 1em;
+	margin-bottom: -1px;
+	z-index: 1;
 
-	h4 {
+	h4,
+	p {
 		margin: 0.2em;
+	}
+
+	.left {
+		.link {
+			color: black;
+			text-decoration: none;
+			transition: 250ms all linear;
+
+			&:hover {
+				color: blue;
+				transition: 250ms all linear;
+			}
+		}
 	}
 
 	.right {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
+
+		.col {
+			display: flex;
+			flex-direction: column;
+		}
+	}
+
+	.del {
+		position: absolute;
+		top: 0.5em;
+		right: 0.5em;
+		max-height: 1.5em;
+		max-width: 1.5em;
+
+		&:hover {
+			cursor: pointer;
+		}
+	}
+
+	.drag {
+		position: absolute;
+		left: 50%;
+		top: 0.5em;
+		max-width: 1em;
+		transform: translateX(-50%);
+
+		&:hover {
+			cursor: grab;
+		}
 	}
 }

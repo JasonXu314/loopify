@@ -1,10 +1,19 @@
 import styles from './PlaceholderTile.module.scss';
 
 interface Props {
-	id: string;
+	id: string | null;
 }
 
 const PlaceholderTile: React.FC<Props> = ({ id }) => {
+	if (id === null) {
+		return (
+			<div className={styles.main}>
+				<div className={styles.left}>
+					<div className={styles['placeholder-h4']} />
+				</div>
+			</div>
+		);
+	}
 	return (
 		<div className={styles.main}>
 			<div className={styles.left}>

@@ -1,0 +1,57 @@
+.main {
+	position: relative;
+	display: inline-block;
+	margin: 0.25em 0.5em;
+
+	.button {
+		padding: 0.5em 1em;
+		background-color: white;
+		border: 1px solid gray;
+		border-radius: 6px;
+		box-shadow: -1px -1px 1px #c0c0c0 inset, 1.5px 1.5px 1.5px black;
+		transition: all 250ms ease-in-out;
+
+		&:not(:disabled) {
+			cursor: pointer;
+		}
+
+		&:not(:disabled):hover {
+			transform: translateY(1px);
+			box-shadow: -1px -1px 1px #c0c0c0 inset, 0.5px 0.5px 0.5px black;
+			transition: all 250ms ease-in-out;
+		}
+	}
+
+	.tooltip {
+		opacity: 0;
+		position: absolute;
+		padding: 0.25em 0.5em;
+		max-width: 150%;
+		width: max-content;
+		top: 150%;
+		left: 50%;
+		transform: translateX(-50%);
+		text-align: center;
+		background-color: rgba($color: black, $alpha: 0.75);
+		color: white;
+		transition: all 250ms ease-in-out;
+		transition-delay: 250ms;
+
+		&::after {
+			content: '';
+			position: absolute;
+			left: 50%;
+			transform: translateX(-50%);
+			top: -16px;
+			border-top: 8px solid transparent;
+			border-right: 8px solid transparent;
+			border-bottom: 8px solid rgba(0, 0, 0, 0.75);
+			border-left: 8px solid transparent;
+		}
+	}
+
+	.button:hover ~ .tooltip {
+		opacity: 1;
+		transition: all 250ms ease-in-out;
+	}
+}

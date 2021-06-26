@@ -1,12 +1,23 @@
 .main {
 	display: grid;
 	grid-template-columns: 3fr 1fr;
+	border: 1px solid black;
+	padding: 1em;
+	margin-bottom: -1px;
 
 	h4 {
-		margin: calc((139.375px - 1em) / 2) 0;
+		margin: calc((177.88px - 1em) / 2) 0;
+		line-height: 1em;
+		height: 1em;
+	}
+
+	.placeholder-h4 {
+		height: 1em;
+		margin: calc((177.88px - 1em) / 2) 0;
 	}
 
 	.loading {
-		height: 139.375px;
+		height: calc(211.88px - 2em - 2px);
+		display: block;
 	}
 }
