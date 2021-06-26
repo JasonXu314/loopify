@@ -172,7 +172,8 @@ const Index: NextPage = () => {
 
 	useEffect(() => {
 		updateLocalStorage(tracks);
-	}, [tracks]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [JSON.stringify(tracks)]);
 
 	useEffect(() => {
 		const unsubscribers = tracks.filter<Track>(isTrack).map((track, i) => {
