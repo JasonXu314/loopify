@@ -26,7 +26,7 @@ export default class Track implements RawTrack {
 			}
 		};
 
-		if (video.audio.includes('/api/audio')) {
+		if (video.audio.includes('vercel')) {
 			this.video.audio = `${process.env.NEXT_PUBLIC_BACKEND_URL!}/audio/${video._id}`;
 		}
 
