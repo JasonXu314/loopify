@@ -31,7 +31,7 @@ const Index: NextPage = () => {
 	const fetchVideo = useCallback(
 		(id: string) => {
 			const { token, cancel } = axios.CancelToken.source();
-			axios.post<Video>('/api/load', { id }, { cancelToken: token }).then((res) => {
+			axios.post<Video>(`${process.env.NEXT_PUBLIC_BACKEND_URL!}/load`, { id }, { cancelToken: token }).then((res) => {
 				const video = res.data;
 				const track = new Track(video, audioLoader);
 				setTracks((tracks) =>

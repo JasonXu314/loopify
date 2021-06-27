@@ -25,21 +25,22 @@ export default class Track implements RawTrack {
 				this.audio.currentTime = this.length;
 			}
 		};
+
+		if (video.audio.includes('/api/audio')) {
+			this.video.audio = `${process.env.NEXT_PUBLIC_BACKEND_URL!}/audio/${video._id}`;
+		}
+
 		audioLoader.load(video.audio).then((res) => {
 			this.audio.src = URL.createObjectURL(res);
 			this.loaded = true;
 		});
 		if (video.author === undefined || video.description === undefined) {
-			axios.post<Video>('/api/load', { id: video._id }).then((res) => {
+			axios.post<Video>(`${process.env.NEXT_PUBLIC_BACKEND_URL!}/load`, { id: video._id }).then((res) => {
 				this.video.author = res.data.author;
 				this.video.description = res.data.description;
 			});
 		}
 		this.audio.addEventListener('timeupdate', this.tickListener);
-
-		if (video.audio.startsWith('https://loopify-backend.herokuapp.com/audio')) {
-			this.video.audio = `https://loopify.vercel.app/api/audio/${video._id}`;
-		}
 	}
 
 	public set vol(vol: number) {
