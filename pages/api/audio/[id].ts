@@ -26,6 +26,7 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
 		}
 	} catch (err) {
 		console.log(err);
+		res.status(500).send(err);
 	} finally {
 		await client.close();
 	}
