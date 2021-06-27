@@ -201,6 +201,10 @@ const Index: NextPage = () => {
 		};
 	}, [tracks, progressing]);
 
+	useEffect(() => {
+		axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL!}/wakeup`);
+	}, []);
+
 	return (
 		<div
 			className={styles.main}
