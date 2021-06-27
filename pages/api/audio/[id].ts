@@ -12,7 +12,7 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
 		const video = await db.collection<Video>('metadata').findOne({ _id: id });
 
 		if (video) {
-			res.status(200).setHeader('Content-Disposition', contentDisposition(video.title));
+			res.status(200).setHeader('Content-Disposition', contentDisposition(`${video.title}.mp3`));
 			const dlStream = gridFS.openDownloadStream(id as unknown as ObjectId);
 
 			dlStream.pipe(res);
@@ -21,7 +21,6 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
 				dlStream.on('close', resolve);
 				dlStream.on('end', resolve);
 			});
-			res.end();
 		} else {
 			res.status(404).send('No video with that id found');
 		}
