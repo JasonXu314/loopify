@@ -265,7 +265,7 @@ const Index: NextPage = () => {
 							del={() => {
 								setTracks([...tracks.slice(0, i), ...tracks.slice(i + 1)]);
 
-								if (playIdx && i > playIdx) {
+								if (playIdx && i >= playIdx) {
 									setPlayIdx(playIdx - 1);
 								}
 							}}
