@@ -23,6 +23,7 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
 				dlStream.on('close', resolve);
 				dlStream.on('end', resolve);
 			});
+			res.end();
 		} else {
 			res.status(404).send('No video with that id found');
 		}
