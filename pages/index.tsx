@@ -1,6 +1,6 @@
 import axios from 'axios';
 import Head from 'next/head';
-import { GetServerSideProps, NextPage } from 'next/types';
+import { NextPage } from 'next/types';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Button from '../components/Button/Button';
 import Input from '../components/Input/Input';
@@ -31,7 +31,7 @@ const Index: NextPage = () => {
 	const fetchVideo = useCallback(
 		(id: string) => {
 			const { token, cancel } = axios.CancelToken.source();
-			axios.post<Video>(`${process.env.NEXT_PUBLIC_BACKEND_URL!}/load`, { id }, { cancelToken: token }).then((res) => {
+			axios.post<Video>('/api/load', { id }, { cancelToken: token }).then((res) => {
 				const video = res.data;
 				const track = new Track(video, audioLoader);
 				setTracks((tracks) =>
@@ -377,12 +377,6 @@ const Index: NextPage = () => {
 			</div>
 		</div>
 	);
-};
-
-export const getServerSideProps: GetServerSideProps = async () => {
-	await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL!}/wakeup`);
-
-	return { props: {} };
 };
 
 export default Index;
