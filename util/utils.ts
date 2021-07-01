@@ -49,3 +49,9 @@ export function timeStringToSeconds(time: string): number {
 
 	return hours * 3600 + minutes * 60 + seconds;
 }
+
+export function handleSpecial(str: string): string {
+	return str.replaceAll(/\\u.{4}/g, (str) => {
+		return String.fromCodePoint(parseInt(str.slice(2), 16));
+	});
+}

@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { MouseEvent, useEffect, useRef, useState } from 'react';
 import Track from '../../util/Track';
-import { rawNumberToTime, timeStringToSeconds } from '../../util/utils';
+import { handleSpecial, rawNumberToTime, timeStringToSeconds } from '../../util/utils';
 import Button from '../Button/Button';
+import DragIcon from '../DragIcon/DragIcon';
 import Input from '../Input/Input';
 import TrashCan from '../TrashCan/TrashCan';
 import styles from './VideoTile.module.scss';
@@ -13,11 +14,11 @@ interface Props {
 	onPause(): void;
 	onPlay(): void;
 	onResume(): void;
-	// startDrag(evt: MouseEvent<SVGElement, globalThis.MouseEvent>, div: HTMLDivElement): void;
+	startDrag(evt: MouseEvent<SVGElement, globalThis.MouseEvent>, div: HTMLDivElement): void;
 	updateLocalStorage(): void;
 }
 
-const VideoTile: React.FC<Props> = ({ track, playing, onPause, onResume, onPlay, updateLocalStorage, del }) => {
+const VideoTile: React.FC<Props> = ({ track, playing, onPause, onResume, onPlay, updateLocalStorage, del, startDrag }) => {
 	const [vol, setVol] = useState<number>(track.vol);
 	const [startTime, setStartTime] = useState<number>(track.startTime);
 	const [eagerStartTime, setEagerStartTime] = useState<string | null>(null);
@@ -49,11 +50,7 @@ const VideoTile: React.FC<Props> = ({ track, playing, onPause, onResume, onPlay,
 			<div className={styles.left}>
 				<img src={track.video.thumb} />
 				<a className={styles.link} href={`https://www.youtube.com/watch?v=${track.video._id}`} rel="noopener noreferrer" target="_blank">
-					<h4>
-						{track.video.title.replaceAll(/\\u.{4}/g, (str) => {
-							return String.fromCodePoint(parseInt(str.slice(2), 16));
-						})}
-					</h4>
+					<h4>{handleSpecial(track.video.title)}</h4>
 				</a>
 				<p>Length: {track.video.duration}</p>
 				<Button
@@ -162,13 +159,13 @@ const VideoTile: React.FC<Props> = ({ track, playing, onPause, onResume, onPlay,
 				</div>
 			</div>
 			<TrashCan className={styles.del} onClick={del} />
-			{/* <DragIcon
+			<DragIcon
 				className={styles.drag}
 				onMouseDown={(evt) => {
 					evt.preventDefault();
 					startDrag(evt, mainDiv.current!);
 				}}
-			/> */}
+			/>
 		</div>
 	);
 };

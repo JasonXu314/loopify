@@ -9,7 +9,7 @@ import VideoTile from '../components/VideoTile/VideoTile';
 import styles from '../sass/Index.module.scss';
 import AudioLoader from '../util/AudioLoader';
 import Track from '../util/Track';
-import { getId, isPlaceholder, isTrack, updateLocalStorage } from '../util/utils';
+import { getId, handleSpecial, isPlaceholder, isTrack, updateLocalStorage } from '../util/utils';
 
 const Index: NextPage = () => {
 	const [newId, setNewId] = useState<string>('');
@@ -24,9 +24,9 @@ const Index: NextPage = () => {
 	const listRef = useRef<HTMLDivElement | null>(null);
 	const mainRef = useRef<HTMLDivElement | null>(null);
 	const controlRef = useRef<HTMLDivElement | null>(null);
-	// const startY = useRef<number | null>(null);
-	// const changeIdx = useRef<number | null>(null);
-	// const tracksRef = useRef<(Track | PlaceholderTrack)[] | null>(null);
+	const startY = useRef<number | null>(null);
+	const changeIdx = useRef<number | null>(null);
+	const tracksRef = useRef<(Track | PlaceholderTrack)[] | null>(null);
 
 	const fetchVideo = useCallback(
 		(id: string) => {
@@ -95,9 +95,9 @@ const Index: NextPage = () => {
 			if (navigator.mediaSession) {
 				const video = (tracks[playIdx] as Track).video;
 				navigator.mediaSession.metadata = new MediaMetadata({
-					artist: `Artist: ${video.author}\n${video.description}`,
+					artist: `Artist: ${handleSpecial(video.author)}\n${handleSpecial(video.description)}`,
 					artwork: [{ src: video.thumb }],
-					title: video.title
+					title: handleSpecial(video.title)
 				});
 			}
 		} else {
@@ -223,6 +223,7 @@ const Index: NextPage = () => {
 				<Input
 					id="link-input"
 					label="Video URL"
+					autoComplete="off"
 					value={newId}
 					onChange={(evt) => setNewId(evt.target.value)}
 					onEnter={() => {
@@ -269,109 +270,100 @@ const Index: NextPage = () => {
 									setPlayIdx(playIdx - 1);
 								}
 							}}
-							// startDrag={(evt, div) => {
-							// 	startY.current = evt.pageY;
-							// 	changeIdx.current = 0;
-							// 	div.style.position = 'absolute';
-							// 	div.style.width = '1174px';
-							// 	div.style.zIndex = '2';
-							// 	const listener = (evt: MouseEvent) => {
-							// 		const deltaY = evt.y - startY.current!;
-							// 		div.style.top = `${evt.y}px`;
+							startDrag={(evt, div) => {
+								startY.current = evt.pageY;
+								changeIdx.current = 0;
+								div.style.position = 'absolute';
+								div.style.width = '1174px';
+								div.style.zIndex = '2';
+								const listener = (evt: MouseEvent) => {
+									const deltaY = evt.y - startY.current!;
+									const movingUp = evt.movementY < 0;
+									div.style.top = `${evt.y - 24}px`;
 
-							// 		if (
-							// 			deltaY > 211.88 * (changeIdx.current! + 0.75) &&
-							// 			deltaY < 211.88 * (changeIdx.current! + 1) &&
-							// 			i + changeIdx.current! < tracks.length - 1
-							// 		) {
-							// 			changeIdx.current!++;
-							// 			const idx = changeIdx.current!;
-							// 			const tracks = tracksRef.current!;
+									if (
+										deltaY > 211.88 * (changeIdx.current! + 1) &&
+										deltaY < 211.88 * (changeIdx.current! + 1.25) &&
+										i + changeIdx.current! < tracks.length - 1 &&
+										!movingUp
+									) {
+										changeIdx.current!++;
+										const tracks = tracksRef.current!;
+										const placeholderIdx = tracks.findIndex((track) => 'placeholder' in track && track.id === null);
 
-							// 			const newTracks: (PlaceholderTrack | Track)[] = [];
-							// 			for (let j = 0; j < tracks.length; j++) {
-							// 				const track = tracks[j];
-							// 				if (!('placeholder' in track && track.id === null)) {
-							// 					if (j === i + idx) {
-							// 						newTracks.push({ placeholder: true, id: null, cancel: null });
-							// 					} else {
-							// 						newTracks.push(tracks[j]);
-							// 					}
-							// 				} else {
-							// 					newTracks.push(tracks[j + 1]);
-							// 				}
-							// 			}
+										const newTracks: (PlaceholderTrack | Track)[] = [...tracks];
+										if (newTracks[placeholderIdx + 1] === track) {
+											newTracks[placeholderIdx] = newTracks[placeholderIdx + 2];
+											newTracks[placeholderIdx + 2] = { placeholder: true, id: null, cancel: null };
+										} else {
+											newTracks[placeholderIdx] = newTracks[placeholderIdx + 1];
+											newTracks[placeholderIdx + 1] = { placeholder: true, id: null, cancel: null };
+										}
 
-							// 			setTracks(newTracks);
-							// 			tracksRef.current = newTracks;
-							// 		} else if (
-							// 			deltaY < 211.88 * (changeIdx.current! + 0.25) &&
-							// 			deltaY > 211.88 * changeIdx.current! &&
-							// 			i + changeIdx.current! > 0
-							// 		) {
-							// 			changeIdx.current!--;
-							// 			const idx = changeIdx.current!;
-							// 			const tracks = tracksRef.current!;
+										setTracks(newTracks);
+										tracksRef.current = newTracks;
+									} else if (
+										deltaY < 211.88 * changeIdx.current! &&
+										deltaY > 211.88 * (changeIdx.current! - 0.25) &&
+										i + changeIdx.current! > 0 &&
+										movingUp
+									) {
+										changeIdx.current!--;
+										const tracks = tracksRef.current!;
+										const placeholderIdx = tracks.findIndex((track) => 'placeholder' in track && track.id === null);
 
-							// 			const newTracks: (PlaceholderTrack | Track)[] = [];
-							// 			for (let j = 0; j < tracks.length; j++) {
-							// 				const track = tracks[j];
-							// 				if (!('placeholder' in track && track.id === null)) {
-							// 					if (j === i + idx) {
-							// 						newTracks.push({ placeholder: true, id: null, cancel: null });
-							// 					} else {
-							// 						newTracks.push(tracks[j]);
-							// 					}
-							// 				} else {
-							// 					newTracks.push(tracks[j - 1]);
-							// 				}
-							// 			}
+										const newTracks: (PlaceholderTrack | Track)[] = [...tracks];
+										if (newTracks[placeholderIdx - 1] === track) {
+											newTracks[placeholderIdx] = newTracks[placeholderIdx - 2];
+											newTracks[placeholderIdx - 2] = { placeholder: true, id: null, cancel: null };
+										} else {
+											newTracks[placeholderIdx] = newTracks[placeholderIdx - 1];
+											newTracks[placeholderIdx - 1] = { placeholder: true, id: null, cancel: null };
+										}
 
-							// 			setTracks(newTracks);
-							// 			tracksRef.current = newTracks;
-							// 		}
-							// 	};
+										setTracks(newTracks);
+										tracksRef.current = newTracks;
+									}
+								};
 
-							// 	const nt: (PlaceholderTrack | Track)[] = [
-							// 		...tracks.slice(0, i + 1),
-							// 		{ placeholder: true, id: null, cancel: null },
-							// 		...tracks.slice(i + 1)
-							// 	];
-							// 	setTracks(nt);
-							// 	tracksRef.current = nt;
+								const nt: (PlaceholderTrack | Track)[] = [
+									...tracks.slice(0, i + 1),
+									{ placeholder: true, id: null, cancel: null },
+									...tracks.slice(i + 1)
+								];
+								setTracks(nt);
+								tracksRef.current = nt;
 
-							// 	window.addEventListener('mousemove', listener);
-							// 	window.addEventListener(
-							// 		'mouseup',
-							// 		() => {
-							// 			const newTracks: (PlaceholderTrack | Track)[] = [];
-							// 			console.log('Tracks', tracksRef.current);
-							// 			for (let j = 0; j < tracksRef.current!.length; j++) {
-							// 				const itTrack = tracksRef.current![j];
-							// 				console.log(track, itTrack, track === itTrack);
-							// 				if (track !== itTrack) {
-							// 					if ('placeholder' in itTrack && itTrack.id === null) {
-							// 						newTracks.push(track);
-							// 					} else {
-							// 						newTracks.push(itTrack);
-							// 					}
-							// 				}
-							// 			}
+								window.addEventListener('mousemove', listener);
+								window.addEventListener(
+									'mouseup',
+									() => {
+										const newTracks: (PlaceholderTrack | Track)[] = [];
+										for (let j = 0; j < tracksRef.current!.length; j++) {
+											const itTrack = tracksRef.current![j];
+											if (track !== itTrack) {
+												if ('placeholder' in itTrack && itTrack.id === null) {
+													newTracks.push(track);
+												} else {
+													newTracks.push(itTrack);
+												}
+											}
+										}
 
-							// 			div.style.removeProperty('width');
-							// 			div.style.removeProperty('top');
-							// 			div.style.removeProperty('position');
-							// 			div.style.removeProperty('z-index');
-							// 			changeIdx.current = null;
-							// 			startY.current = null;
-							// 			tracksRef.current = null;
-							// 			setTracks(newTracks);
+										div.style.removeProperty('width');
+										div.style.removeProperty('top');
+										div.style.removeProperty('position');
+										div.style.removeProperty('z-index');
+										changeIdx.current = null;
+										startY.current = null;
+										tracksRef.current = null;
+										setTracks(newTracks);
 
-							// 			window.removeEventListener('mousemove', listener);
-							// 		},
-							// 		{ once: true }
-							// 	);
-							// }}
+										window.removeEventListener('mousemove', listener);
+									},
+									{ once: true }
+								);
+							}}
 							key={track.video._id}
 						/>
 					) : (
