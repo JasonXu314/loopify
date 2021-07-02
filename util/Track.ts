@@ -26,7 +26,7 @@ export default class Track implements RawTrack {
 			}
 		};
 
-		if (video.audio.includes('vercel') || video.audio.includes('herokuapp')) {
+		if (!video.audio.includes(process.env.NEXT_PUBLIC_BACKEND_URL!)) {
 			this.video.audio = `${process.env.NEXT_PUBLIC_BACKEND_URL!}/audio/${video._id}`;
 		}
 
