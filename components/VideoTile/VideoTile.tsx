@@ -48,7 +48,9 @@ const VideoTile: React.FC<Props> = ({ track, playing, onPause, onResume, onPlay,
 				mainDiv.current = elem;
 			}}>
 			<div className={styles.left}>
-				<img src={track.video.thumb} />
+				<div className={styles.thumb}>
+					<img src={track.video.thumb} />
+				</div>
 				<a className={styles.link} href={`https://www.youtube.com/watch?v=${track.video._id}`} rel="noopener noreferrer" target="_blank">
 					<h4>{handleSpecial(track.video.title)}</h4>
 				</a>

@@ -90,15 +90,24 @@ const Index: NextPage = () => {
 
 	useEffect(() => {
 		if (playIdx !== null) {
-			audio.current = tracks[playIdx] as Track;
+			audio.current = (changeIdx.current !== null ? tracks.filter((track) => !isPlaceholder(track) || track.id !== null) : tracks)[playIdx] as Track;
 
 			if (navigator.mediaSession) {
-				const video = (tracks[playIdx] as Track).video;
-				navigator.mediaSession.metadata = new MediaMetadata({
-					artist: `Artist: ${handleSpecial(video.author)}\n${handleSpecial(video.description)}`,
-					artwork: [{ src: video.thumb }],
-					title: handleSpecial(video.title)
-				});
+				if (changeIdx.current !== null) {
+					const video = audio.current.video;
+					navigator.mediaSession.metadata = new MediaMetadata({
+						artist: `Artist: ${handleSpecial(video.author)}\n${handleSpecial(video.description)}`,
+						artwork: [{ src: video.thumb }],
+						title: handleSpecial(video.title)
+					});
+				} else {
+					const video = (tracks[playIdx] as Track).video;
+					navigator.mediaSession.metadata = new MediaMetadata({
+						artist: `Artist: ${handleSpecial(video.author)}\n${handleSpecial(video.description)}`,
+						artwork: [{ src: video.thumb }],
+						title: handleSpecial(video.title)
+					});
+				}
 			}
 		} else {
 			audio.current = null;
@@ -202,7 +211,10 @@ const Index: NextPage = () => {
 	}, [tracks, progressing]);
 
 	useEffect(() => {
-		axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL!}/wakeup`);
+		axios
+			.post(`${process.env.NEXT_PUBLIC_BACKEND_URL!}/wakeup`)
+			.then(() => {})
+			.catch(() => {});
 	}, []);
 
 	return (
@@ -274,7 +286,7 @@ const Index: NextPage = () => {
 								startY.current = evt.pageY;
 								changeIdx.current = 0;
 								div.style.position = 'absolute';
-								div.style.width = '1174px';
+								div.style.width = div.parentElement!.clientWidth - 34 + 'px';
 								div.style.zIndex = '2';
 								const listener = (evt: MouseEvent) => {
 									const deltaY = evt.y - startY.current!;
@@ -282,8 +294,8 @@ const Index: NextPage = () => {
 									div.style.top = `${evt.y - 24}px`;
 
 									if (
-										deltaY > 211.88 * (changeIdx.current! + 1) &&
-										deltaY < 211.88 * (changeIdx.current! + 1.25) &&
+										deltaY > 207.88 * (changeIdx.current! + 1) &&
+										deltaY < 207.88 * (changeIdx.current! + 1.25) &&
 										i + changeIdx.current! < tracks.length - 1 &&
 										!movingUp
 									) {
@@ -303,8 +315,8 @@ const Index: NextPage = () => {
 										setTracks(newTracks);
 										tracksRef.current = newTracks;
 									} else if (
-										deltaY < 211.88 * changeIdx.current! &&
-										deltaY > 211.88 * (changeIdx.current! - 0.25) &&
+										deltaY < 207.88 * changeIdx.current! &&
+										deltaY > 207.88 * (changeIdx.current! - 0.25) &&
 										i + changeIdx.current! > 0 &&
 										movingUp
 									) {
