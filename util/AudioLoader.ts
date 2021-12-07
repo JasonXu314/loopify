@@ -61,6 +61,28 @@ export default class AudioLoader {
 						}
 					};
 				});
+			} else {
+				const req = this.db!.transaction('files')
+					.objectStore('files')
+					.get(url.slice(url.length - 11));
+
+				req.onsuccess = () => {
+					if (!req.result) {
+						if (!this.current) {
+							const promise = this.fetch(url);
+
+							this.current = promise;
+							this.queue.push(url);
+							this.resolvers.push(resolve);
+							promise.then(this.handleLoaded.bind(this));
+						} else {
+							this.queue.push(url);
+							this.resolvers.push(resolve);
+						}
+					} else {
+						resolve(req.result);
+					}
+				};
 			}
 		});
 	}

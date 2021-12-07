@@ -2,6 +2,17 @@ type Canceler = import('axios').Canceler;
 
 type OldRawTrack = Pick<RawTrack, 'video' | 'vol' | 'startTime'> & Partial<RawTrack>;
 
+interface VideoInfo {
+	player_response: {
+		videoDetails: {
+			title: string;
+			shortDescription: string;
+			author: string;
+			lengthSeconds: string;
+		};
+	};
+}
+
 interface Video {
 	_id: string;
 	url: string;

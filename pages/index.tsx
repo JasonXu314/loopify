@@ -9,7 +9,7 @@ import VideoTile from '../components/VideoTile/VideoTile';
 import styles from '../sass/Index.module.scss';
 import AudioLoader from '../util/AudioLoader';
 import Track from '../util/Track';
-import { getId, handleSpecial, isPlaceholder, isTrack, updateLocalStorage } from '../util/utils';
+import { getId, handleSpecial, isPlaceholder, isTrack, rawNumberToTime, updateLocalStorage } from '../util/utils';
 
 const Index: NextPage = () => {
 	const [newId, setNewId] = useState<string>('');
@@ -31,8 +31,18 @@ const Index: NextPage = () => {
 	const fetchVideo = useCallback(
 		(id: string) => {
 			const { token, cancel } = axios.CancelToken.source();
-			axios.post<Video>(`${process.env.NEXT_PUBLIC_BACKEND_URL!}/load`, { id }, { cancelToken: token }).then((res) => {
-				const video = res.data;
+			axios.get<VideoInfo>(`${process.env.NEXT_PUBLIC_BACKEND_URL!}/info?id=${id}`, { cancelToken: token }).then((res) => {
+				const videoInfo = res.data.player_response.videoDetails;
+				const video: Video = {
+					_id: id,
+					audio: `${process.env.NEXT_PUBLIC_BACKEND_URL!}/audio?id=${id}`,
+					author: videoInfo.author,
+					description: videoInfo.shortDescription,
+					duration: rawNumberToTime(parseInt(videoInfo.lengthSeconds)),
+					thumb: `https://i.ytimg.com/vi/${id}/1.jpg`,
+					title: videoInfo.title,
+					url: `https://www.youtube.com/watch?v=${id}`
+				};
 				const track = new Track(video, audioLoader);
 				setTracks((tracks) =>
 					tracks.map((oldTrack) => {
@@ -72,7 +82,7 @@ const Index: NextPage = () => {
 
 					setTracks((tracks) => [...tracks, { placeholder: true, id, cancel }]);
 					setNewId('');
-				} catch (err) {
+				} catch (err: any) {
 					console.log(err.message);
 				}
 			}
@@ -122,11 +132,13 @@ const Index: NextPage = () => {
 			navigator.mediaSession.setActionHandler('pause', () => {
 				if (audio.current && audio.current.isPlaying()) {
 					audio.current.pause();
+					setPaused(true);
 				}
 			});
 			navigator.mediaSession.setActionHandler('play', () => {
 				if (audio.current && audio.current.wasPlaying()) {
 					audio.current.resume();
+					setPaused(false);
 				}
 			});
 		}
@@ -261,7 +273,8 @@ const Index: NextPage = () => {
 					isTrack(track) ? (
 						<VideoTile
 							track={track}
-							playing={i === playIdx && !paused}
+							playingTrack={i === playIdx && !paused}
+							playing={!paused}
 							onPause={onPause}
 							onPlay={() => {
 								if (audio.current?.isPlaying()) {
@@ -376,7 +389,7 @@ const Index: NextPage = () => {
 									{ once: true }
 								);
 							}}
-							key={track.video._id}
+							key={track.serialize() + track.isPlaying()}
 						/>
 					) : (
 						<PlaceholderTile id={track.id} key={track.id} />

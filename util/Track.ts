@@ -1,4 +1,3 @@
-import axios from 'axios';
 import AudioLoader from './AudioLoader';
 import { timeStringToSeconds } from './utils';
 
@@ -26,20 +25,11 @@ export default class Track implements RawTrack {
 			}
 		};
 
-		if (!video.audio.includes(process.env.NEXT_PUBLIC_BACKEND_URL!)) {
-			this.video.audio = `${process.env.NEXT_PUBLIC_BACKEND_URL!}/audio/${video._id}`;
-		}
-
 		audioLoader.load(video.audio).then((res) => {
+			console.log(res);
 			this.audio.src = URL.createObjectURL(res);
 			this.loaded = true;
 		});
-		if (video.author === undefined || video.description === undefined) {
-			axios.post<Video>(`${process.env.NEXT_PUBLIC_BACKEND_URL!}/load`, { id: video._id }).then((res) => {
-				this.video.author = res.data.author;
-				this.video.description = res.data.description;
-			});
-		}
 		this.audio.addEventListener('timeupdate', this.tickListener);
 	}
 
