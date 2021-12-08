@@ -57,17 +57,17 @@ const VideoTile: React.FC<Props> = ({ track, playing, onPause, onPlay, updateLoc
 				<Button
 					onClick={() => {
 						if (track.isPlaying()) {
-							track.pause();
 							onPause();
+							track.pause();
 						} else if (track.wasPlaying()) {
-							track.resume();
 							onPlay();
+							track.resume();
 						} else {
 							if (!track.loaded) {
 								track.prioritize();
 							}
-							track.play();
 							onPlay();
+							track.play();
 						}
 					}}>
 					{playing ? 'Pause' : 'Play'}
