@@ -94,10 +94,6 @@ const Index: NextPage = () => {
 		setPaused(true);
 	}, []);
 
-	const onResume = useCallback(() => {
-		setPaused(false);
-	}, []);
-
 	useEffect(() => {
 		if (playIdx !== null) {
 			audio.current = (changeIdx.current !== null ? tracks.filter((track) => !isPlaceholder(track) || track.id !== null) : tracks)[playIdx] as Track;
