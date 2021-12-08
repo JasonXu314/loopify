@@ -163,6 +163,10 @@ const Index: NextPage = () => {
 					setPaused(true);
 				} else {
 					if (audio.current?.wasPlaying()) {
+						if (audio.current?.isPlaying()) {
+							audio.current?.pause();
+						}
+
 						audio.current?.resume();
 					} else {
 						audio.current?.play();
