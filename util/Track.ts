@@ -26,7 +26,6 @@ export default class Track implements RawTrack {
 		};
 
 		audioLoader.load(video.audio).then((res) => {
-			console.log(res);
 			this.audio.src = URL.createObjectURL(res);
 			this.loaded = true;
 		});

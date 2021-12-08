@@ -9,17 +9,15 @@ import styles from './VideoTile.module.scss';
 
 interface Props {
 	track: Track;
-	playingTrack: boolean;
 	playing: boolean;
 	del(): void;
 	onPlay(): void;
 	onPause(): void;
-	onResume(): void;
 	startDrag(evt: MouseEvent<SVGElement, globalThis.MouseEvent>, div: HTMLDivElement): void;
 	updateLocalStorage(): void;
 }
 
-const VideoTile: React.FC<Props> = ({ track, playingTrack, playing, onPause, onResume, onPlay, updateLocalStorage, del, startDrag }) => {
+const VideoTile: React.FC<Props> = ({ track, playing, onPause, onPlay, updateLocalStorage, del, startDrag }) => {
 	const [vol, setVol] = useState<number>(track.vol);
 	const [startTime, setStartTime] = useState<number>(track.startTime);
 	const [eagerStartTime, setEagerStartTime] = useState<string | null>(null);
@@ -62,11 +60,8 @@ const VideoTile: React.FC<Props> = ({ track, playingTrack, playing, onPause, onR
 							track.pause();
 							onPause();
 						} else if (track.wasPlaying()) {
-							if (playing) {
-								onPlay();
-							}
 							track.resume();
-							onResume();
+							onPlay();
 						} else {
 							if (!track.loaded) {
 								track.prioritize();
@@ -75,7 +70,7 @@ const VideoTile: React.FC<Props> = ({ track, playingTrack, playing, onPause, onR
 							onPlay();
 						}
 					}}>
-					{playingTrack ? 'Pause' : 'Play'}
+					{playing ? 'Pause' : 'Play'}
 				</Button>
 			</div>
 			<div className={styles.right}>

@@ -163,10 +163,6 @@ const Index: NextPage = () => {
 					setPaused(true);
 				} else {
 					if (audio.current?.wasPlaying()) {
-						if (audio.current?.isPlaying()) {
-							audio.current?.pause();
-						}
-
 						audio.current?.resume();
 					} else {
 						audio.current?.play();
@@ -277,8 +273,7 @@ const Index: NextPage = () => {
 					isTrack(track) ? (
 						<VideoTile
 							track={track}
-							playingTrack={i === playIdx && !paused}
-							playing={!paused}
+							playing={i === playIdx && !paused}
 							onPause={onPause}
 							onPlay={() => {
 								if (audio.current?.isPlaying()) {
@@ -288,7 +283,6 @@ const Index: NextPage = () => {
 								setPaused(false);
 								setPlayIdx(i);
 							}}
-							onResume={onResume}
 							updateLocalStorage={() => {
 								updateLocalStorage(tracks);
 							}}
@@ -296,7 +290,7 @@ const Index: NextPage = () => {
 								setTracks([...tracks.slice(0, i), ...tracks.slice(i + 1)]);
 
 								if (playIdx && i >= playIdx) {
-									setPlayIdx(playIdx - 1);
+									setPlayIdx(playIdx === 0 ? 0 : playIdx - 1);
 								}
 							}}
 							startDrag={(evt, div) => {
