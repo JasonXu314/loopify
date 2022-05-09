@@ -1,4 +1,4 @@
-import { Button, Group, ScrollArea, Space, Stack, TextInput, Tooltip } from '@mantine/core';
+import { Button, Group, Space, Stack, TextInput, Tooltip } from '@mantine/core';
 import { getHotkeyHandler, useHotkeys } from '@mantine/hooks';
 import axios from 'axios';
 import Head from 'next/head';
@@ -247,66 +247,61 @@ const Index: NextPage = () => {
 				</Stack>
 			</Group>
 			<Space h="md" />
-			<ScrollArea>
-				<DragDropContext
-					onDragEnd={(result) => {
-						const newIdx = result.destination!.index;
-						const sourceIdx = result.source.index;
-						const newTracks = [...tracks];
+			<DragDropContext
+				onDragEnd={(result) => {
+					const newIdx = result.destination!.index;
+					const sourceIdx = result.source.index;
+					const newTracks = [...tracks];
 
-						if (newIdx !== sourceIdx) {
-							newTracks.splice(newIdx, 0, newTracks.splice(sourceIdx, 1)[0]);
-							setTracks(newTracks);
-						}
-					}}>
-					<Droppable droppableId="main">
-						{(provided) => (
-							<div ref={provided.innerRef} {...provided.droppableProps}>
-								{tracks.map((track, i) => (
-									<Draggable
-										draggableId={isTrack(track) ? track.video._id : track.id!}
-										index={i}
-										key={isTrack(track) ? track.video._id : track.id!}>
-										{(provided) => (
-											<div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
-												{isTrack(track) ? (
-													<VideoTile
-														track={track}
-														playing={i === playIdx && !paused}
-														onPause={onPause}
-														onPlay={() => {
-															if (audio.current?.isPlaying()) {
-																audio.current?.pause();
-															}
+					if (newIdx !== sourceIdx) {
+						newTracks.splice(newIdx, 0, newTracks.splice(sourceIdx, 1)[0]);
+						setTracks(newTracks);
+					}
+				}}>
+				<Droppable droppableId="main">
+					{(provided) => (
+						<div ref={provided.innerRef} {...provided.droppableProps}>
+							{tracks.map((track, i) => (
+								<Draggable draggableId={isTrack(track) ? track.video._id : track.id!} index={i} key={isTrack(track) ? track.video._id : track.id!}>
+									{(provided) => (
+										<div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+											{isTrack(track) ? (
+												<VideoTile
+													track={track}
+													playing={i === playIdx && !paused}
+													onPause={onPause}
+													onPlay={() => {
+														if (audio.current?.isPlaying()) {
+															audio.current?.pause();
+														}
 
-															setPaused(false);
-															setPlayIdx(i);
-														}}
-														updateLocalStorage={() => {
-															updateLocalStorage(tracks);
-														}}
-														del={() => {
-															setTracks([...tracks.slice(0, i), ...tracks.slice(i + 1)]);
+														setPaused(false);
+														setPlayIdx(i);
+													}}
+													updateLocalStorage={() => {
+														updateLocalStorage(tracks);
+													}}
+													del={() => {
+														setTracks([...tracks.slice(0, i), ...tracks.slice(i + 1)]);
 
-															if (playIdx && i >= playIdx) {
-																setPlayIdx(playIdx === 0 ? 0 : playIdx - 1);
-															}
-														}}
-														key={track.serialize() + track.isPlaying()}
-													/>
-												) : (
-													<PlaceholderTile id={track.id} />
-												)}
-											</div>
-										)}
-									</Draggable>
-								))}
-								{provided.placeholder}
-							</div>
-						)}
-					</Droppable>
-				</DragDropContext>
-			</ScrollArea>
+														if (playIdx && i >= playIdx) {
+															setPlayIdx(playIdx === 0 ? 0 : playIdx - 1);
+														}
+													}}
+													key={track.serialize() + track.isPlaying()}
+												/>
+											) : (
+												<PlaceholderTile id={track.id} />
+											)}
+										</div>
+									)}
+								</Draggable>
+							))}
+							{provided.placeholder}
+						</div>
+					)}
+				</Droppable>
+			</DragDropContext>
 		</div>
 	);
 };
