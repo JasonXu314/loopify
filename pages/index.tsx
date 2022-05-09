@@ -212,7 +212,6 @@ const Index: NextPage = () => {
 		<div className={styles.main}>
 			<Head>
 				<title>Music Player</title>
-				<style>{`html { overflow: hidden; }`}</style>
 			</Head>
 			<Group>
 				<Stack>
