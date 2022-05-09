@@ -1,9 +1,10 @@
+import { Button, Group, Space, Stack, TextInput, Tooltip } from '@mantine/core';
+import { getHotkeyHandler, useHotkeys } from '@mantine/hooks';
 import axios from 'axios';
 import Head from 'next/head';
 import { NextPage } from 'next/types';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import Button from '../components/Button/Button';
-import Input from '../components/Input/Input';
+import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 import PlaceholderTile from '../components/PlaceholderTile/PlaceholderTile';
 import VideoTile from '../components/VideoTile/VideoTile';
 import styles from '../sass/Index.module.scss';
@@ -17,16 +18,10 @@ const Index: NextPage = () => {
 	const [playIdx, setPlayIdx] = useState<number | null>(null);
 	const [progressing, setProgressing] = useState<boolean>(false);
 	const [paused, setPaused] = useState<boolean>(true);
-	const [tooLong, setTooLong] = useState<boolean>(false);
 	const placeholders = useMemo(() => tracks.filter<PlaceholderTrack>(isPlaceholder), [tracks]);
 	const audioLoader = useMemo(() => new AudioLoader(), []);
 	const audio = useRef<Track | null>(playIdx !== null ? (tracks[playIdx] as Track) : null);
-	const listRef = useRef<HTMLDivElement | null>(null);
-	const mainRef = useRef<HTMLDivElement | null>(null);
-	const controlRef = useRef<HTMLDivElement | null>(null);
-	const startY = useRef<number | null>(null);
 	const changeIdx = useRef<number | null>(null);
-	const tracksRef = useRef<(Track | PlaceholderTrack)[] | null>(null);
 
 	const fetchVideo = useCallback(
 		(id: string) => {
@@ -58,19 +53,6 @@ const Index: NextPage = () => {
 		},
 		[audioLoader]
 	);
-
-	useEffect(() => {
-		if (listRef.current && mainRef.current && controlRef.current) {
-			const listHeight = Number(getComputedStyle(listRef.current).height.slice(0, -2));
-			const mainHeight = Number(getComputedStyle(mainRef.current).height.slice(0, -2));
-			const em = Number(getComputedStyle(controlRef.current).marginBottom.slice(0, -2));
-			const controlHeight = Number(getComputedStyle(controlRef.current).height.slice(0, -2)) + em + 0.2 * em;
-
-			if (listHeight >= mainHeight - controlHeight - 1) {
-				setTooLong(true);
-			}
-		}
-	}, [tracks]);
 
 	const addLink = useCallback(
 		(newLink) => {
@@ -140,20 +122,16 @@ const Index: NextPage = () => {
 		}
 	}, []);
 
-	useEffect(() => {
-		const rawTracks = JSON.parse(localStorage.getItem('music-player:tracks') || '[]') as (RawTrack | PlaceholderTrack)[];
-		rawTracks.forEach((rawTrack) => {
-			if ('placeholder' in rawTrack) {
-				const cancel = fetchVideo(rawTrack.id!);
-				rawTrack.cancel = cancel;
-			}
-		});
-		setTracks(rawTracks.map((rawTrack) => ('placeholder' in rawTrack ? rawTrack : Track.fromRaw(rawTrack, audioLoader))));
-
-		const hotkeyListener = (evt: KeyboardEvent) => {
-			if (evt.key === 'n') {
+	useHotkeys([
+		[
+			'n',
+			() => {
 				setProgressing(true);
-			} else if (evt.key === 'p') {
+			}
+		],
+		[
+			'p',
+			() => {
 				if (audio.current?.isPlaying()) {
 					audio.current?.pause();
 					setPaused(true);
@@ -166,13 +144,18 @@ const Index: NextPage = () => {
 					setPaused(false);
 				}
 			}
-		};
+		]
+	]);
 
-		window.addEventListener('keypress', hotkeyListener);
-
-		return () => {
-			window.removeEventListener('keypress', hotkeyListener);
-		};
+	useEffect(() => {
+		const rawTracks = JSON.parse(localStorage.getItem('music-player:tracks') || '[]') as (RawTrack | PlaceholderTrack)[];
+		rawTracks.forEach((rawTrack) => {
+			if ('placeholder' in rawTrack) {
+				const cancel = fetchVideo(rawTrack.id!);
+				rawTrack.cancel = cancel;
+			}
+		});
+		setTracks(rawTracks.map((rawTrack) => ('placeholder' in rawTrack ? rawTrack : Track.fromRaw(rawTrack, audioLoader))));
 	}, [fetchVideo, audioLoader]);
 
 	useEffect(() => {
@@ -226,170 +209,100 @@ const Index: NextPage = () => {
 	}, []);
 
 	return (
-		<div
-			className={styles.main}
-			ref={(elem) => {
-				mainRef.current = elem;
-			}}>
+		<div className={styles.main}>
 			<Head>
 				<title>Music Player</title>
 				<style>{`html { overflow: hidden; }`}</style>
 			</Head>
-			<div
-				className={styles.controls}
-				ref={(elem) => {
-					controlRef.current = elem;
-				}}>
-				<Input
-					id="link-input"
-					label="Video URL"
-					autoComplete="off"
-					value={newId}
-					onChange={(evt) => setNewId(evt.target.value)}
-					onEnter={() => {
-						addLink(newId);
-					}}
-				/>
-				<Button
-					onClick={() => {
-						addLink(newId);
-					}}>
-					Add Link
-				</Button>
-				<Button onClick={() => setProgressing(true)} disabled={progressing} hint="Progress to next song (hotkey: N)">
-					Next!
-				</Button>
-			</div>
-			<div
-				className={styles.tracks + (tooLong ? ' ' + styles.long : '')}
-				ref={(elem) => {
-					listRef.current = elem;
-				}}>
-				{tracks.map((track, i) =>
-					isTrack(track) ? (
-						<VideoTile
-							track={track}
-							playing={i === playIdx && !paused}
-							onPause={onPause}
-							onPlay={() => {
-								if (audio.current?.isPlaying()) {
-									audio.current?.pause();
+			<Group>
+				<Stack>
+					<TextInput
+						id="link-input"
+						placeholder="Video URL"
+						label="Video URL"
+						autoComplete="off"
+						value={newId}
+						onKeyUp={getHotkeyHandler([
+							[
+								'Enter',
+								() => {
+									addLink(newId);
 								}
+							]
+						])}
+						onChange={(evt: ChangeEvent<HTMLInputElement>) => setNewId(evt.target.value)}
+					/>
+					<Group>
+						<Button
+							onClick={() => {
+								addLink(newId);
+							}}>
+							Add Link
+						</Button>
+						<Tooltip label="Progress to next song (hotkey: N)">
+							<Button onClick={() => setProgressing(true)} disabled={progressing}>
+								Next!
+							</Button>
+						</Tooltip>
+					</Group>
+				</Stack>
+			</Group>
+			<Space h="md" />
+			<DragDropContext
+				onDragEnd={(result) => {
+					const newIdx = result.destination!.index;
+					const sourceIdx = result.source.index;
+					const newTracks = [...tracks];
 
-								setPaused(false);
-								setPlayIdx(i);
-							}}
-							updateLocalStorage={() => {
-								updateLocalStorage(tracks);
-							}}
-							del={() => {
-								setTracks([...tracks.slice(0, i), ...tracks.slice(i + 1)]);
+					if (newIdx !== sourceIdx) {
+						newTracks.splice(newIdx, 0, newTracks.splice(sourceIdx, 1)[0]);
+						setTracks(newTracks);
+					}
+				}}>
+				<Droppable droppableId="main">
+					{(provided) => (
+						<div ref={provided.innerRef} {...provided.droppableProps}>
+							{tracks.map((track, i) => (
+								<Draggable draggableId={isTrack(track) ? track.video._id : track.id!} index={i} key={isTrack(track) ? track.video._id : track.id!}>
+									{(provided) => (
+										<div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+											{isTrack(track) ? (
+												<VideoTile
+													track={track}
+													playing={i === playIdx && !paused}
+													onPause={onPause}
+													onPlay={() => {
+														if (audio.current?.isPlaying()) {
+															audio.current?.pause();
+														}
 
-								if (playIdx && i >= playIdx) {
-									setPlayIdx(playIdx === 0 ? 0 : playIdx - 1);
-								}
-							}}
-							startDrag={(evt, div) => {
-								startY.current = evt.pageY;
-								changeIdx.current = 0;
-								div.style.position = 'absolute';
-								div.style.width = div.parentElement!.clientWidth - 34 + 'px';
-								div.style.zIndex = '2';
-								const listener = (evt: MouseEvent) => {
-									const deltaY = evt.y - startY.current!;
-									const movingUp = evt.movementY < 0;
-									div.style.top = `${evt.y - 24}px`;
+														setPaused(false);
+														setPlayIdx(i);
+													}}
+													updateLocalStorage={() => {
+														updateLocalStorage(tracks);
+													}}
+													del={() => {
+														setTracks([...tracks.slice(0, i), ...tracks.slice(i + 1)]);
 
-									if (
-										deltaY > 207.88 * (changeIdx.current! + 1) &&
-										deltaY < 207.88 * (changeIdx.current! + 1.25) &&
-										i + changeIdx.current! < tracks.length - 1 &&
-										!movingUp
-									) {
-										changeIdx.current!++;
-										const tracks = tracksRef.current!;
-										const placeholderIdx = tracks.findIndex((track) => 'placeholder' in track && track.id === null);
-
-										const newTracks: (PlaceholderTrack | Track)[] = [...tracks];
-										if (newTracks[placeholderIdx + 1] === track) {
-											newTracks[placeholderIdx] = newTracks[placeholderIdx + 2];
-											newTracks[placeholderIdx + 2] = { placeholder: true, id: null, cancel: null };
-										} else {
-											newTracks[placeholderIdx] = newTracks[placeholderIdx + 1];
-											newTracks[placeholderIdx + 1] = { placeholder: true, id: null, cancel: null };
-										}
-
-										setTracks(newTracks);
-										tracksRef.current = newTracks;
-									} else if (
-										deltaY < 207.88 * changeIdx.current! &&
-										deltaY > 207.88 * (changeIdx.current! - 0.25) &&
-										i + changeIdx.current! > 0 &&
-										movingUp
-									) {
-										changeIdx.current!--;
-										const tracks = tracksRef.current!;
-										const placeholderIdx = tracks.findIndex((track) => 'placeholder' in track && track.id === null);
-
-										const newTracks: (PlaceholderTrack | Track)[] = [...tracks];
-										if (newTracks[placeholderIdx - 1] === track) {
-											newTracks[placeholderIdx] = newTracks[placeholderIdx - 2];
-											newTracks[placeholderIdx - 2] = { placeholder: true, id: null, cancel: null };
-										} else {
-											newTracks[placeholderIdx] = newTracks[placeholderIdx - 1];
-											newTracks[placeholderIdx - 1] = { placeholder: true, id: null, cancel: null };
-										}
-
-										setTracks(newTracks);
-										tracksRef.current = newTracks;
-									}
-								};
-
-								const nt: (PlaceholderTrack | Track)[] = [
-									...tracks.slice(0, i + 1),
-									{ placeholder: true, id: null, cancel: null },
-									...tracks.slice(i + 1)
-								];
-								setTracks(nt);
-								tracksRef.current = nt;
-
-								window.addEventListener('mousemove', listener);
-								window.addEventListener(
-									'mouseup',
-									() => {
-										const newTracks: (PlaceholderTrack | Track)[] = [];
-										for (let j = 0; j < tracksRef.current!.length; j++) {
-											const itTrack = tracksRef.current![j];
-											if (track !== itTrack) {
-												if ('placeholder' in itTrack && itTrack.id === null) {
-													newTracks.push(track);
-												} else {
-													newTracks.push(itTrack);
-												}
-											}
-										}
-
-										div.style.removeProperty('width');
-										div.style.removeProperty('top');
-										div.style.removeProperty('position');
-										div.style.removeProperty('z-index');
-										changeIdx.current = null;
-										startY.current = null;
-										tracksRef.current = null;
-										setTracks(newTracks);
-
-										window.removeEventListener('mousemove', listener);
-									},
-									{ once: true }
-								);
-							}}
-							key={track.serialize() + track.isPlaying()}
-						/>
-					) : (
-						<PlaceholderTile id={track.id} key={track.id} />
-					)
-				)}
-			</div>
+														if (playIdx && i >= playIdx) {
+															setPlayIdx(playIdx === 0 ? 0 : playIdx - 1);
+														}
+													}}
+													key={track.serialize() + track.isPlaying()}
+												/>
+											) : (
+												<PlaceholderTile id={track.id} />
+											)}
+										</div>
+									)}
+								</Draggable>
+							))}
+							{provided.placeholder}
+						</div>
+					)}
+				</Droppable>
+			</DragDropContext>
 		</div>
 	);
 };

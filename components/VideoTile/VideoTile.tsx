@@ -1,8 +1,7 @@
-import { MouseEvent, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Track from '../../util/Track';
 import { handleSpecial, rawNumberToTime, timeStringToSeconds } from '../../util/utils';
 import Button from '../Button/Button';
-import DragIcon from '../DragIcon/DragIcon';
 import Input from '../Input/Input';
 import TrashCan from '../TrashCan/TrashCan';
 import styles from './VideoTile.module.scss';
@@ -13,11 +12,10 @@ interface Props {
 	del(): void;
 	onPlay(): void;
 	onPause(): void;
-	startDrag(evt: MouseEvent<SVGElement, globalThis.MouseEvent>, div: HTMLDivElement): void;
 	updateLocalStorage(): void;
 }
 
-const VideoTile: React.FC<Props> = ({ track, playing, onPause, onPlay, updateLocalStorage, del, startDrag }) => {
+const VideoTile: React.FC<Props> = ({ track, playing, onPause, onPlay, updateLocalStorage, del }) => {
 	const [vol, setVol] = useState<number>(track.vol);
 	const [startTime, setStartTime] = useState<number>(track.startTime);
 	const [eagerStartTime, setEagerStartTime] = useState<string | null>(null);
@@ -160,13 +158,6 @@ const VideoTile: React.FC<Props> = ({ track, playing, onPause, onPlay, updateLoc
 				</div>
 			</div>
 			<TrashCan className={styles.del} onClick={del} />
-			<DragIcon
-				className={styles.drag}
-				onMouseDown={(evt) => {
-					evt.preventDefault();
-					startDrag(evt, mainDiv.current!);
-				}}
-			/>
 		</div>
 	);
 };
