@@ -1,7 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { Button, Slider } from '@mantine/core';
+import { useEffect, useState } from 'react';
+import { DraggableProvidedDragHandleProps } from 'react-beautiful-dnd';
 import Track from '../../util/Track';
 import { handleSpecial, rawNumberToTime, timeStringToSeconds } from '../../util/utils';
-import Button from '../Button/Button';
+import DragIcon from '../DragIcon/DragIcon';
 import Input from '../Input/Input';
 import TrashCan from '../TrashCan/TrashCan';
 import styles from './VideoTile.module.scss';
@@ -9,19 +11,19 @@ import styles from './VideoTile.module.scss';
 interface Props {
 	track: Track;
 	playing: boolean;
+	dragProps?: DraggableProvidedDragHandleProps;
 	del(): void;
 	onPlay(): void;
 	onPause(): void;
 	updateLocalStorage(): void;
 }
 
-const VideoTile: React.FC<Props> = ({ track, playing, onPause, onPlay, updateLocalStorage, del }) => {
+const VideoTile: React.FC<Props> = ({ track, playing, dragProps, onPause, onPlay, updateLocalStorage, del }) => {
 	const [vol, setVol] = useState<number>(track.vol);
 	const [startTime, setStartTime] = useState<number>(track.startTime);
 	const [eagerStartTime, setEagerStartTime] = useState<string | null>(null);
 	const [endTime, setEndTime] = useState<number>(track.endTime);
 	const [eagerEndTime, setEagerEndTime] = useState<string | null>(null);
-	const mainDiv = useRef<HTMLDivElement | null>(null);
 
 	useEffect(() => {
 		track.vol = vol;
@@ -39,11 +41,7 @@ const VideoTile: React.FC<Props> = ({ track, playing, onPause, onPlay, updateLoc
 	}, [track, endTime, updateLocalStorage]);
 
 	return (
-		<div
-			className={styles.main}
-			ref={(elem) => {
-				mainDiv.current = elem;
-			}}>
+		<div className={styles.main}>
 			<div className={styles.left}>
 				<div className={styles.thumb}>
 					<img src={track.video.thumb} />
@@ -74,14 +72,12 @@ const VideoTile: React.FC<Props> = ({ track, playing, onPause, onPlay, updateLoc
 			<div className={styles.right}>
 				<div className={styles.col}>
 					<h4>Start Time</h4>
-					<input
-						type="range"
+					<Slider
+						label={(value) => rawNumberToTime(value)}
 						max={track.length}
-						min="0"
+						min={0}
 						value={startTime}
-						onChange={(evt) => {
-							const newStartTime = parseInt(evt.target.value);
-
+						onChange={(newStartTime) => {
 							if (newStartTime < endTime) {
 								setStartTime(newStartTime);
 							}
@@ -109,14 +105,12 @@ const VideoTile: React.FC<Props> = ({ track, playing, onPause, onPlay, updateLoc
 						}}
 					/>
 					<h4>End Time</h4>
-					<input
-						type="range"
+					<Slider
+						label={(value) => rawNumberToTime(value)}
 						max={track.length}
-						min="0"
+						min={0}
 						value={endTime}
-						onChange={(evt) => {
-							const newEndTime = parseInt(evt.target.value);
-
+						onChange={(newEndTime) => {
 							if (newEndTime > startTime) {
 								setEndTime(newEndTime);
 							}
@@ -146,18 +140,18 @@ const VideoTile: React.FC<Props> = ({ track, playing, onPause, onPlay, updateLoc
 				</div>
 				<div className={styles.col}>
 					<h4>Volume</h4>
-					<input
-						type="range"
-						max="100"
-						min="0"
+					<Slider
+						max={100}
+						min={0}
 						value={vol}
-						onChange={(evt) => {
-							setVol(parseInt(evt.target.value));
+						onChange={(newVol) => {
+							setVol(newVol);
 						}}
 					/>
 				</div>
 			</div>
 			<TrashCan className={styles.del} onClick={del} />
+			<DragIcon className={styles.drag} dragProps={dragProps} />
 		</div>
 	);
 };

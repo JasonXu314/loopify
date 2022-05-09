@@ -262,9 +262,12 @@ const Index: NextPage = () => {
 					{(provided) => (
 						<div ref={provided.innerRef} {...provided.droppableProps}>
 							{tracks.map((track, i) => (
-								<Draggable draggableId={isTrack(track) ? track.video._id : track.id!} index={i} key={isTrack(track) ? track.video._id : track.id!}>
+								<Draggable
+									draggableId={isTrack(track) ? track.video._id : track.id!}
+									index={i}
+									key={isTrack(track) ? track.video._id : track.id!}>
 									{(provided) => (
-										<div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+										<div ref={provided.innerRef} {...provided.draggableProps}>
 											{isTrack(track) ? (
 												<VideoTile
 													track={track}
@@ -288,6 +291,7 @@ const Index: NextPage = () => {
 															setPlayIdx(playIdx === 0 ? 0 : playIdx - 1);
 														}
 													}}
+													dragProps={provided.dragHandleProps}
 													key={track.serialize() + track.isPlaying()}
 												/>
 											) : (
